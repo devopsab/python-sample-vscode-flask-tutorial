@@ -29,40 +29,52 @@ stages:
       displayName: 'Use Python $(python.version)'
 
     - script: |
+        python -m venv atenv
+        source antenv/bin/activate
         python -m pip install --upgrade pip
+        pip install setup
         pip install -r requirements.txt
+      workingDirectory: $(projectRoot)
       displayName: 'Install dependencies'
 
     - script: |
         pip install pytest pytest-azurepipelines
         pytest
       displayName: 'pytest'
-    - task: PublishBuildArtifacts@1
+    
+    - task: ArchiveFiles@2
       inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'drop'
-        publishLocation: 'Container'
-       
-
+        rootFolderOrFile: '$(Build.BinariesDirectory)'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+        replaceExistingArchive: true
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+        artifact: 'drop'
+        publishLocation: 'pipeline'
+    
+  
 - stage: Deploy
   jobs:
   - job: Deploy
     pool:
       vmImage: ubuntu-latest
     steps:
-
-    - task: DownloadBuildArtifacts@1
+    - task: UsePythonVersion@0
       inputs:
-        buildType: 'current'
-        downloadType: 'single'
-        downloadPath: '$(System.ArtifactsDirectory)'
-        artifactName: 'drop'
-
+        versionSpec: '$(pythonVersion)'
+        addToPath: true
+        architecture: 'x64'
+    
     - task: AzureRmWebAppDeployment@4
       inputs:
         ConnectionType: 'AzureRM'
         azureSubscription: 'Azure Pass - Sponsorship(b3958229-1a29-42b0-9d93-f9394a2f4138)'
-        appType: 'webApp'
-        WebAppName: 'adampythonwebapp'
-        packageForLinux: '$(System.ArtifactsDirectory)/drop/*.zip'
+        appType: 'webAppLinux'
+        WebAppName: 'firstpythonwebapp'
+        packageForLinux: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+        StartupCommand: 'gunicorn --bind=0.0.0.0 --workers=4 startup:app'
+
 
