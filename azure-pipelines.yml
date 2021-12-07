@@ -16,7 +16,7 @@ stages:
     strategy:
       matrix:
         Python37:
-          python.version: '3.6'
+          python.version: '3.6.15'
 
     steps:
     - task: UsePythonVersion@0
