@@ -12,11 +12,11 @@ stages:
   - job: Build
 
     pool:
-      vmImage: ubuntu-latest
+      vmImage: ubuntu-18.04
     strategy:
       matrix:
         Python37:
-          python.version: '3.8'
+          python.version: '3.6'
 
     steps:
     - task: UsePythonVersion@0
@@ -55,7 +55,7 @@ stages:
   jobs:
   - job: Deploy
     pool:
-      vmImage: ubuntu-latest
+      vmImage: ubuntu-18.04
     steps:
     - task: UsePythonVersion@0
       inputs:
