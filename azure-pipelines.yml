@@ -19,14 +19,11 @@ stages:
           python.version: '3.6.15'
 
     steps:
-
-
     - task: UsePythonVersion@0
       inputs:
         versionSpec: '3.x'
         addToPath: true
         architecture: 'x86'
-
 
 lockBehavior:
     - script: |
